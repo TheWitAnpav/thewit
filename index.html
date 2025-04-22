@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ANPAV Dashboard</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(#011a2b, #033b46);
+      color: white;
+      transition: background 0.4s, color 0.4s;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #002634;
+      padding: 10px 20px;
+      border-bottom: 2px solid #00bcd4;
+    }
+    .header-left { display: flex; align-items: center; }
+    .logo { height: 40px; }
+    .logo-text { font-size: 20px; margin: 4px 0 0 10px; }
+
+    #greeting-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-style: normal;
+      font-size: 14px;
+      white-space: nowrap;
+      border-right: 2px solid white;
+      padding-right: 8px;
+    }
+
+    nav { position: relative; }
+    nav ul {
+      display: flex;
+      gap: 20px;
+      list-style: none;
+      margin: 0;
+      padding: 10px;
+      border: 2px solid #00bcd4;
+      border-radius: 8px;
+      background: #002634;
+      width: fit-content;
+    }
+    nav li { position: relative; }
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      padding: 5px 10px;
+      display: block;
+      transition: box-shadow 0.3s;
+    }
+    nav a:hover {
+      background: #00bcd4;
+      color: #000;
+      border-radius: 5px;
+      box-shadow: 0 0 10px #00bcd4, 0 0 20px #00bcd4;
+    }
+    .tooltip {
+      visibility: hidden;
+      opacity: 0;
+      background-color: rgba(0, 0, 0, 0.85);
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 6px 10px;
+      position: absolute;
+      z-index: 1;
+      bottom: -35px;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      transition: opacity 0.3s ease, visibility 0.3s;
+      font-size: 14px;
+    }
+    nav li:hover .tooltip {
+      visibility: visible;
+      opacity: 1;
+    }
+    .hamburger {
+      display: none;
+      font-size: 28px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      color: white;
+      position: relative;
+      z-index: 1001;
+    }
+    .adsense {
+      text-align: center;
+      font-size: 26px;
+      font-weight: bold;
+      margin: 20px 0 10px;
+      color: inherit;
+      border-top: 2px dashed white;
+      border-bottom: 2px dashed white;
+      padding: 10px;
+      position: relative;
+    }
+
+    .adsense-buttons {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 10px;
+  padding: 0 10px;
+}
+
+.adsense-buttons button {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid #fff;
+  border-radius: 8px;
+  color: white;
+  font-size: 1.2rem;
+  padding: 8px 16px;
+  cursor: pointer;
+  box-shadow: 0 0 5px cyan;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.adsense-buttons button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 10px cyan;
+}
+
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      gap: 20px;
+    }
+
+    .cards {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .cards.loading .card {
+      position: relative;
+      overflow: hidden;
+      background: #333;
+    }
+    .cards.loading .card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,0.2), rgba(255,255,255,0));
+      animation: shimmer 1.5s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+
+    .card {
+      display: flex;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid #00bcd4;
+      border-radius: 10px;
+      padding: 10px;
+      width: 90%;
+      max-width: 210px;
+      box-shadow: 2px 2px 10px #00bcd4;
+      color: white;
+      text-decoration: none;
+      transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+      background: rgba(0, 188, 212, 0.2);
+      transform: scale(1.05);
+      box-shadow: 0 0 20px #00bcd4;
+    }
+    .card img {
+      height: 80px;
+      width: 80px;
+      margin-right: 15px;
+      transition: transform 0.3s ease;
+    }
+    .card:hover img {
+      transform: scale(1.1);
+    }
+    .card span {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .info-panel {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 16px;
+      overflow-y: auto;
+    }
+
+    .update-panel h2 { margin-top: 0; }
+    .update-panel ul { list-style: none; padding: 0; }
+    .update-panel li { margin-bottom: 8px; }
+    .update-panel a {
+      color: #00bcd4;
+      text-decoration: none;
+      transition: text-shadow 0.3s ease;
+    }
+    .update-panel a:hover {
+      text-decoration: underline;
+      text-shadow: 0 0 8px #00bcd4;
+    }
+
+    .badge {
+      font-size: 12px;
+      padding: 2px 6px;
+      margin-left: 6px;
+      border-radius: 4px;
+      color: white;
+    }
+    .badge.green { background-color: #28a745; }
+    .badge.red { background-color: #dc3545; }
+    .badge.yellow { background-color: #ffc107; }
+
+    /* Scrollbar Styling */
+    .info-panel::-webkit-scrollbar {
+      width: 8px;
+    }
+    .info-panel::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .info-panel::-webkit-scrollbar-thumb {
+      background-color: #00bcd4;
+      border-radius: 4px;
+    }
+
+    @media screen and (min-width: 768px) {
+      .main-content {
+        flex-direction: row;
+        align-items: stretch;
+      }
+      .cards {
+        flex: 1;
+        align-items: flex-start;
+      }
+      .info-panel {
+        flex: 1;
+        max-height: 100%;
+      }
+    }
+
+    @media screen and (max-width: 767px) {
+      .main-content {
+        flex-direction: row !important;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+      .cards, .info-panel {
+        flex: 1 1 100%;
+        max-width: 48%;
+        box-sizing: border-box;
+      }
+      .cards { align-items: center; }
+      .info-panel {
+        margin-top: 0;
+        margin-left: 0;
+        max-height: 400px;
+      }
+
+      nav ul {
+        flex-direction: column;
+        align-items: center;
+        position: absolute;
+        top: 60px;
+        left: 0;
+        width: 100%;
+        display: none;
+        z-index: 1000;
+      }
+      nav ul.show { display: flex; }
+      .hamburger { display: block; }
+    }
+
+    @media screen and (max-width: 360px) {
+      .cards, .info-panel {
+        max-width: 100%;
+      }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+</head>
+<body>
+  <div id="particles-js" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;"></div>
+
+  <header>
+    <div class="header-left">
+      <img src="https://www.datanami.com/wp-content/uploads/2023/02/ChatGPT_shutterstock_CKA-scaled.jpg" alt="ANPAV Logo" class="logo">
+      <h1 class="logo-text">ANPAV</h1>
+    </div>
+    <div id="greeting-container"><span id="greeting-text"></span></div>
+    <nav>
+      <button class="hamburger" onclick="toggleMenu()">☰</button>
+      <ul id="menuList">
+        <li><a href="#">Course</a><div class="tooltip">View courses offered</div></li>
+        <li><a href="#">Result</a><div class="tooltip">Check your results</div></li>
+        <li><a href="#">Updates</a><div class="tooltip">Latest news & notices</div></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="adsense">ADSENSE</section>
+  <div class="adsense-buttons">
+    <button>🔍</button>
+    <button>🔔</button>
+    <button>⚙️</button>
+  </div>
+  
+  <div class="main-content">
+    <section class="cards loading" id="cardsContainer">
+      <a href="#" class="card"><img src="https://www.datanami.com/wp-content/uploads/2023/02/ChatGPT_shutterstock_CKA-scaled.jpg"><span>CSE</span></a>
+      <a href="#" class="card"><img src="https://www.datanami.com/wp-content/uploads/2023/02/ChatGPT_shutterstock_CKA-scaled.jpg"><span>E&C</span></a>
+      <a href="#" class="card"><img src="https://www.datanami.com/wp-content/uploads/2023/02/ChatGPT_shutterstock_CKA-scaled.jpg"><span>EEE</span></a>
+      <a href="#" class="card"><img src="https://www.datanami.com/wp-content/uploads/2023/02/ChatGPT_shutterstock_CKA-scaled.jpg"><span>MEC</span></a>
+      <a href="#" class="card"><img src="https://www.datanami.com/wp-content/uploads/2023/02/ChatGPT_shutterstock_CKA-scaled.jpg"><span>CVL</span></a>
+    </section>
+
+    <section class="info-panel">
+      <div class="update-panel">
+        <h2>VTU Updates</h2>
+        <ul>
+          <li><a href="#">VTU NON-CBCS Results</a><span class="badge green">New</span></li>
+          <li><a href="#">SSP Scholarship 2023</a><span class="badge green">New</span></li>
+          <li><a href="#">Cloud Computing vtu question papers</a><span class="badge green">New</span></li>
+          <li><a href="#">Machine Learning Syllabus</a><span class="badge green">New</span></li>
+          <li><a href="#">18CS71-AiML VTU Question Papers</a><span class="badge green">New</span></li>
+          <li><a href="#">Machine Learning VTU Question Papers</a><span class="badge green">New</span></li>
+          <li><a href="#">Web Technology Syllabus</a><span class="badge green">New</span></li>
+          <li><a href="#">VTU change of college Procedure</a><span class="badge red">New</span></li>
+          <li><a href="#">VTU MTech Syllabus</a><span class="badge red">New</span></li>
+          <li><a href="#">VTU MBA Results</a><span class="badge green">New</span></li>
+          <li><a href="#">VTU Notes</a><span class="badge green">New</span></li>
+          <li><a href="#">VTU PhD TimeTable</a><span class="badge green">New</span></li>
+          <li><a href="#">VTU Academic Calendar 2023</a><span class="badge red">Odd Sem</span></li>
+          <li><a href="#">VTU Updates</a><span class="badge yellow">New</span></li>
+          <li><a href="#">Infosys Recruitment 2022</a><span class="badge yellow">New</span></li>
+          <li><a href="#">Cyber Security Syllabus</a><span class="badge yellow">New</span></li>
+          <li><a href="#">MBA in USA for Engineering Students</a><span class="badge yellow">New</span></li>
+          <li><a href="#">Contact Us</a></li>
+        </ul>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    function toggleMenu() {
+      document.getElementById("menuList").classList.toggle("show");
+    }
+
+    function getTimeGreeting() {
+      const hour = new Date().getHours();
+      if (hour < 12) return "Good Morning";
+      else if (hour < 18) return "Good Afternoon";
+      else return "Good Evening";
+    }
+
+    function askNameAndStore() {
+      let name = prompt("Welcome! What is your good name?");
+      if (!name) name = "Guest";
+      localStorage.setItem("username", name);
+      localStorage.setItem("usernameTimestamp", Date.now().toString());
+      return name;
+    }
+
+    function typeGreeting(text, callback) {
+      const target = document.getElementById("greeting-text");
+      target.innerHTML = "";
+      let index = 0;
+
+      function typeEffect() {
+        if (index < text.length) {
+          target.innerHTML += text.charAt(index);
+          index++;
+          setTimeout(typeEffect, 80);
+        } else {
+          callback();
+        }
+      }
+      typeEffect();
+    }
+
+    window.onload = function () {
+      const storedName = localStorage.getItem("username");
+      const storedTime = localStorage.getItem("usernameTimestamp");
+      const now = Date.now();
+      const dayMs = 86400000;
+
+      let nameToUse;
+      if (storedName && storedTime && now - parseInt(storedTime) < dayMs) {
+        nameToUse = storedName;
+      } else {
+        nameToUse = askNameAndStore();
+      }
+
+      const greeting = `${getTimeGreeting()}, ${nameToUse}!`;
+      typeGreeting(greeting, () => {
+        document.getElementById("cardsContainer").classList.remove("loading");
+        document.querySelector(".main-content").style.opacity = 1;
+      });
+    };
+
+    particlesJS("particles-js", {
+      "particles": {
+        "number": { "value": 40 },
+        "color": { "value": "#00bcd4" },
+        "shape": { "type": "circle" },
+        "opacity": { "value": 0.5 },
+        "size": { "value": 3 },
+        "line_linked": {
+          "enable": true,
+          "distance": 120,
+          "color": "#00bcd4",
+          "opacity": 0.4,
+          "width": 1
+        },
+        "move": { "enable": true, "speed": 1.2 }
+      },
+      "interactivity": {
+        "events": { "onhover": { "enable": true, "mode": "grab" } },
+        "modes": { "grab": { "distance": 140, "line_linked": { "opacity": 0.5 } } }
+      }
+    });
+  </script>
+</body>
+</html>
